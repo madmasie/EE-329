@@ -37,7 +37,8 @@ a binary count to 15 using LEDs and an instruction execution timer. */
 // file ExecutionTime.c sample code for A1 
 #include "main.h"
 #include <math.h>
- 
+
+typedef uint32_t var_type;  //used to test
 void SystemClock_Config(void);
 var_type TestFunction(var_type num);
  
@@ -49,13 +50,33 @@ void main(void)  {
  
   // configure GPIO pins PC0, PC1 for: 
   // output mode, push-pull, no pull up or pull down, high speed
-  RCC->AHB2ENR   |=  (RCC_AHB2ENR_GPIOCEN);
-  GPIOC->MODER   &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1); 
-  GPIOC->MODER   |=  (GPIO_MODER_MODE0_0 | GPIO_MODER_MODE1_0);
-  GPIOC->OTYPER  &= ~(GPIO_OTYPER_OT0 | GPIO_OTYPER_OT1);
-  GPIOC->PUPDR   &= ~(GPIO_PUPDR_PUPD0 | GPIO_PUPDR_PUPD1);        
-  GPIOC->OSPEEDR |=  ((3 << GPIO_OSPEEDR_OSPEED0_Pos) |
-                      (3 << GPIO_OSPEEDR_OSPEED1_Pos));
+  RCC->AHB2ENR   |=  (RCC_AHB2ENR_GPIOCEN); //enable clock for GPIOC
+
+  
+  GPIOC->MODER &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1 |
+                    GPIO_MODER_MODE2 | GPIO_MODER_MODE3);   // Clear mode bits
+    
+    
+  GPIOC->MODER |=  (GPIO_MODER_MODE0_0 | GPIO_MODER_MODE1_0 |
+                    GPIO_MODER_MODE2_0 | GPIO_MODER_MODE3_0); // Set as output (01)
+
+  // Set PC0–PC3 output type to push-pull
+  GPIOC->OTYPER &= ~(GPIO_OTYPER_OT0 | GPIO_OTYPER_OT1 |
+                     GPIO_OTYPER_OT2 | GPIO_OTYPER_OT3); // 0 = push-pull
+
+
+   // Disable pull-up/pull-down resistors on PC0–PC3
+   GPIOC->PUPDR &= ~(GPIO_PUPDR_PUPD0 | GPIO_PUPDR_PUPD1 |
+                     GPIO_PUPDR_PUPD2 | GPIO_PUPDR_PUPD3); // 00 = no pull        
+  
+  //sets speed of PC0-PC3 to high speed
+  //00 = low speed, 01 = medium speed, 10 = high speed, 11 = very high speed
+  GPIOC->OSPEEDR |= ((3 << GPIO_OSPEEDR_OSPEED0_Pos) |  // PC0 high speed
+                   (3 << GPIO_OSPEEDR_OSPEED1_Pos) |  // PC1 high speed
+                   (3 << GPIO_OSPEEDR_OSPEED2_Pos) |  // PC2 high speed
+                   (3 << GPIO_OSPEEDR_OSPEED3_Pos));  // PC3 high speed (11)
+
+  //reset the output pins to 0, LEDs off
   GPIOC->BRR = (GPIO_PIN_0 | GPIO_PIN_1); // preset PC0, PC1 to 0
 
   // time the test function call using PC0 
@@ -63,8 +84,21 @@ void main(void)  {
   main_var = TestFunction(15);            // call test function
   GPIOC->BRR = (GPIO_PIN_0);              // turn off PC0
   
-  while (1)      // infinite loop to avoid program exit
-    main_var++;  // added to eliminate not used warning 
+  //loop counting 0 to 15
+  for (int repear = 0; repear < 3, repeat++)  //for loop to repeat 3x
+    for (int i = 0; i <16, i++) {
+        GPIOC->ODF = (GPIOC->ODR & 0x0F) | (i & 0x0F); //set output to PC0-P3
+        for (volatile int j = 0; j < 100000; j++); // delay loop
+    }
+}
+
+
+//part b
+//infinite loop to repeat the function call and measure execution time
+  while (1) {      // infinite loop to avoid program exit
+    GPIOC->BSRR = GPIO_PIN_0;     //set PC0 high to start timing
+    main_var = TestFunction(15);  //call
+    GPIOC->BRR = GPIO_PIN_0;      //set PC0 low to stop timing
 }
  
 var_type TestFunction(var_type num) {
