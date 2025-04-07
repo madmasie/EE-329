@@ -39,12 +39,16 @@ a binary count to 15 using LEDs and an instruction execution timer. */
 #include <math.h>
 
 typedef uint32_t var_type;  //used to test
+
 void SystemClock_Config(void);
 var_type TestFunction(var_type num);
+
+void delay_loop(volatile int count) {
+ 
  
 void main(void)  {
   var_type main_var;
- 
+  int iteration_count = 0;
   HAL_Init();
   SystemClock_Config();
  
@@ -85,10 +89,11 @@ void main(void)  {
   GPIOC->BRR = (GPIO_PIN_0);              // turn off PC0
   
   //loop counting 0 to 15
-  for (int repear = 0; repear < 3, repeat++)  //for loop to repeat 3x
-    for (int i = 0; i <16, i++) {
-        GPIOC->ODF = (GPIOC->ODR & 0x0F) | (i & 0x0F); //set output to PC0-P3
-        for (volatile int j = 0; j < 100000; j++); // delay loop
+  for (iteration_count = 0; iteration_count < 3; iteration_count++) {
+    for (int led_count = 0; led_count < 16; led_count++) {
+        GPIOC->BRR = 0x0F;  // Clear PC0–PC3
+        GPIOC->BSRR = (led_count & 0x0F);  // Set bits for binary count
+        delay_loop(100000);  // Delay for LED visibility
     }
 }
 
@@ -101,13 +106,31 @@ void main(void)  {
     GPIOC->BRR = GPIO_PIN_0;      //set PC0 low to stop timing
 }
  
+
+// Crude blocking delay loop
+void delay_loop(volatile int count) {
+  while (count--);
+}
+
+// Function to configure the system clock
 var_type TestFunction(var_type num) {
  
   var_type test_var;  				// local variable
  
   GPIOC->BSRR = (GPIO_PIN_1);             // turn on PC1
-  /* USER insert test function here e.g. test_var = num; */
-  GPIOC->BRR = (GPIO_PIN_1);              // turn off PC1
+  
+  test_var = num + 1;
+    // test_var = num;
+    // test_var = num * 3;
+    // test_var = num / 3;
+    // test_var = num * num;
+    // test_var = num % 10;
+    // test_var = pow(num, 3);
+    // test_var = sqrt(num);
+    // test_var = sin(num);
+
+
+  GPIOC->BRR = (GPIO_PIN_1);              // turn off PC1 (low)
   
   return test_var;
 }
