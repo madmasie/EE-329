@@ -110,6 +110,11 @@ int main(void)
   }
 }
 
+// Crude blocking delay loop
+void delay_loop(volatile int count) {
+  while (count--);
+}
+
 /* -----------------------------------------------------------------------------
  * function : TestFunction( )
  * INs      : num
@@ -125,7 +130,7 @@ uint8_t TestFunction(uint8_t num)
   GPIOC->BSRR = (GPIO_PIN_1); // turn on PC1
 
   test_var = num;
-  // test_var = num + 1;
+  //test_var = num + 1;
   // test_var = num * 3;
   // test_var = num / 3;
   // test_var = num * num;
