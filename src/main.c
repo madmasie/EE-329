@@ -14,7 +14,7 @@
  * clocks          : 4 MHz MSI to AHB2
  * @attention      : (c) 2025 Maddie Masiello. All rights reserved.
  *******************************************************************************
- * PROJECT PLAN:
+ * PROJECT PLAN: 
  * 1. LED Counter:
  *    - Connect 4 LEDs to GPIO pins PC0, PC1, PC2, and PC3.
  *    - Implement a binary counter that counts from 0 to 15 and displays the
