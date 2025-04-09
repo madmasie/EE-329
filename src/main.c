@@ -45,7 +45,11 @@
 #include "main.h"
 #include <math.h>
 
-typedef uint32_t var_type; // Define var_type as uint32_t for 32-bit variable type
+typedef uint8_t var_type; // Define var_type as uint32_t for 8-bit variable type
+//typedef uint32_t var_type; 
+//typedef uint64_t var_type; 
+//typedef float var_type; 
+//typedef double var_type; 
 
 void SystemClock_Config(void);
 uint8_t TestFunction(uint8_t num);
@@ -64,7 +68,12 @@ void delay_loop(volatile int count);
 
 int main(void)
 {
-  uint8_t main_var;
+  volatile uint8_t main_var;
+  //volatile uint32_t main_var;
+  //volatile uint64_t main_var; 
+  //volatile float main_var; 
+  //volatile double main_var; 
+
   int iteration_count = 0; // initialization of iteration count
   HAL_Init();
   SystemClock_Config();
@@ -86,7 +95,7 @@ int main(void)
 
   
   GPIOC->BSRR = (GPIO_PIN_0); // turn on PC0
-  main_var = TestFunction(3); // call test function
+  main_var = TestFunction(100000000); // call test function
   GPIOC->BRR = (GPIO_PIN_0);  // turn off PC0
 
   // repeat the LED counter 3 times, count from 0 to 15 in binary on LEDS
@@ -104,9 +113,14 @@ int main(void)
   while (1)
   {
     GPIOC->BSRR = GPIO_PIN_0;   // set PC0 high to start timing
-    main_var = TestFunction(3); // for uint8_t
-    // main_var = TestFunction(1000000000); //for unt32_t
-    GPIOC->BRR = GPIO_PIN_0; // set PC0 low to stop timing
+
+    main_var = TestFunction(3);                   // for uint8_t
+    //main_var = TestFunction(1000000000);        // for uint32_t
+    //main_var = TestFunction(1000000000000ULL);  //for unt32_t
+    //main_var = TestFunction(3.14f);             // for float
+    //main_var = TestFunction(3.141);             // for double  
+
+    GPIOC->BRR = GPIO_PIN_0;                  // set PC0 low to stop timing
   }
 }
 
@@ -124,22 +138,27 @@ void delay_loop(volatile int count) {
  * version  : 1
  * date     : 04/7/2025
  * -------------------------------------------------------------------------- */
-uint8_t TestFunction(uint8_t num)
-{
-  uint8_t test_var;           // local variable
-  GPIOC->BSRR = (GPIO_PIN_1); // turn on PC1
 
+ uint8_t TestFunction(uint8_t num)
+{
+  //change type as needed
+  volatile uint8_t test_var;            
+
+
+  GPIOC->BSRR = (GPIO_PIN_1);           // turn on PC1
+
+  //change test functions as needed for testing
   test_var = num;
   //test_var = num + 1;
-  // test_var = num * 3;
-  // test_var = num / 3;
+  //test_var = num * 3;
+  //test_var = num / 3;
   // test_var = num * num;
-  // test_var = num % 10;
-  // test_var = pow(num, 3);
-  // test_var = sqrt(num);
-  // test_var = sin(num);
+  //test_var = num % 10;
+  //test_var = pow(num, 3)
+  //test_var = sqrt(num);
+  //test_var = sin(num);
 
-  GPIOC->BRR = (GPIO_PIN_1); // turn off PC1 (low)
+  GPIOC->BRR = (GPIO_PIN_1);           // turn off PC1 (low)
 
   return test_var;
 }
