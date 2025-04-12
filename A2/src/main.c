@@ -1,108 +1,110 @@
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */ 
-/* Includes ------------------------------------------------------------------*/
+/*******************************************************************************
+ * EE 329 A2 KEYPAD INTERFACE 
+ *******************************************************************************
+ * @file           : main.c
+ * @brief          : keypad configuration and debounced detection of keypresses
+ * project         : EE 329 S'23 Assignment 2
+ * authors         : Maddie Masiello - mmasiell@calpoly.edu
+ * version         : 0.1
+ * date            : 
+ * compiler        : STM32CubeIDE v.1.12.0 Build: 14980_20230301_1550 (UTC) 
+ * target          : NUCLEO-L4A6ZG
+ * clocks          : 4 MHz MSI to AHB2
+ * @attention      : (c) 2023 STMicroelectronics.  All rights reserved.
+ *******************************************************************************
+ * KEYPAD PLAN :
+ * set columns as outputs, rows as inputs w pulldowns
+ * loop:
+ * drive all columns HI read all rows
+ * if any row N is HI
+ *    set all columns LO
+ *    drive each column M HI alone
+ *    read row N until HI 🡪 pressed key loc’n = N, M
+ * key value = 3N+M+1 for 1..9,special case for *,0,#
+ *******************************************************************************
+ * KEYPAD WIRING 4 ROWS 3 COLS (pinout NUCLEO-L4A6ZG = L496ZG)
+ *      peripheral – Nucleo I/O
+ * keypad 1  COL 2 - PF13= CN10- 2 - OUT
+ * keypad 2  ROW 1 - PF0 = CN9 -21 - IN, PD ON
+ * keypad 3  COL 1 - PF12= CN7 -20 - OUT
+ * keypad 4  ROW 4 - PF3 = CN8 -14 - IN, PD ON
+ * keypad 5  COL 3 - PF14= CN10- 8 - OUT
+ * keypad 6  ROW 3 - PF2 = CN9 -17 - IN, PD ON
+ * keypad 7  ROW 2 - PF1 = CN9 -19 - IN, PD ON
+ *******************************************************************************
+ * REVISION HISTORY
+ * 0.1 230318 bfd  created, wires in breadboard, no keypad
+ * 0.2 230410 bfd  added keypad, debounce code, tested operational
+ * 0.3 230413 bfd  refactored to share in lab manual, tested op’l
+ *******************************************************************************
+ * TODO
+ * convert to separable module for portability
+ *******************************************************************************
+ * 45678-1-2345678-2-2345678-3-2345678-4-2345678-5-2345678-6-2345678-7-234567 */
+/* USER CODE END Header */
+
+
 #include "main.h"
+#include "keypad.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
-/* USER CODE END Includes */ 
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
+void DisplayKeyOnLEDs(uint8_t key);
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
-
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  /* USER CODE BEGIN 2 */
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+int Keypad_DebouncedKey(void) {
+  int key1 = Keypad_WhichKeyIsPressed();
+  HAL_Delay(20);  // 20 ms debounce
+  int key2 = Keypad_WhichKeyIsPressed();
+  if (key1 == key2)
+      return key1;
+  else
+      return NO_KEYPRESS;
 }
 
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+
+int main(void) {
+  HAL_Init();
+  SystemClock_Config();
+
+  Keypad_Config();      // Setup keypad GPIO
+  DisplayKeyOnLEDs(0);  // Initialize LEDs to 0
+
+  int last_key = NO_KEYPRESS;
+
+  while (1) {
+    if (Keypad_IsAnyKeyPressed()) {
+        int key = Keypad_DebouncedKey();
+        if (key != NO_KEYPRESS && key != last_key) {
+            DisplayKeyOnLEDs(key);
+            last_key = key;
+        }
+    }
+}
+
+}
+
+
+// --- LED Display Function ---
+void DisplayKeyOnLEDs(uint8_t key) {
+  RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
+
+  GPIOC->MODER &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1 |
+                    GPIO_MODER_MODE2 | GPIO_MODER_MODE3);
+  GPIOC->MODER |=  (GPIO_MODER_MODE0_0 | GPIO_MODER_MODE1_0 |
+                    GPIO_MODER_MODE2_0 | GPIO_MODER_MODE3_0);
+
+  GPIOC->OTYPER &= ~(GPIO_OTYPER_OT0 | GPIO_OTYPER_OT1 |
+                     GPIO_OTYPER_OT2 | GPIO_OTYPER_OT3);
+  GPIOC->PUPDR &= ~(GPIO_PUPDR_PUPD0 | GPIO_PUPDR_PUPD1 |
+                    GPIO_PUPDR_PUPD2 | GPIO_PUPDR_PUPD3);
+  GPIOC->OSPEEDR |= (GPIO_OSPEEDER_OSPEEDR0 | GPIO_OSPEEDER_OSPEEDR1 |
+                     GPIO_OSPEEDER_OSPEEDR2 | GPIO_OSPEEDER_OSPEEDR3);
+
+  GPIOC->ODR &= ~(0x0F);           // Clear LEDs
+  GPIOC->ODR |= (key & 0x0F);      // Show lower 4 bits
+}
+
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -159,22 +161,12 @@ void Error_Handler(void)
   while (1)
   {
   }
-  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+
 }
-#endif /* USE_FULL_ASSERT */
+#endif 

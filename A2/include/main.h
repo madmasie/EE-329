@@ -1,7 +1,7 @@
 /*******************************************************************************
  * EE 329 A2 KEYPAD INTERFACE 
  *******************************************************************************
- * @file           : main.c
+ * @file           : main.h
  * @brief          : keypad configuration and debounced detection of keypresses
  * project         : EE 329 S'23 Assignment A2
  * authors         : Maddie Masiello
