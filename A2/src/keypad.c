@@ -27,36 +27,50 @@
 
 #include "keypad.h"
 
-//todo: add keypad_configuration()
 
-// --------------------------------------------------- excerpt from keypad.c ---
-void Keypad_Config(void)  { /* to be developed by the student */ }
+
+/* ---------------------------- Keypad_Config()-------------------------------
+ * Keypad_Config() initializes the GPIO pins for the keypad interface.
+ * The keypad is a 4x3 matrix with 4 rows and 3 columns. 
+ * The rows are configured as inputs with pull-down resistors,
+ * and the columns are configured as outputs.
+ * The function enables the GPIOF clock and sets the appropriate mode, type,
+ * speed, and pull-up/pull-down settings for the pins.
+ * The function does not return any value.
+ * -------------------------------------------------------------------------- */
+void Keypad_Config(void)  {
 
     // Enable GPIOF clock (used for both ROWs and COLs)
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOFEN;
 
-    // --- Configure Columns: PF12, PF13, PF14 as OUTPUT ---
-    GPIOF->MODER &= ~(GPIO_MODER_MODE12 | GPIO_MODER_MODE13 | GPIO_MODER_MODE14);
-    GPIOF->MODER |=  (GPIO_MODER_MODE12_0 | GPIO_MODER_MODE13_0 | GPIO_MODER_MODE14_0); // Output mode
+    //Configure Columns: PF12, PF13, PF14 as OUTPUT
+    GPIOF->MODER &= ~(GPIO_MODER_MODE12 | GPIO_MODER_MODE13 | 
+                      GPIO_MODER_MODE14);
+    GPIOF->MODER |=  (GPIO_MODER_MODE12_0 | GPIO_MODER_MODE13_0 |
+                      GPIO_MODER_MODE14_0);  // Output mode
 
-    GPIOF->OTYPER &= ~(GPIO_OTYPER_OT12 | GPIO_OTYPER_OT13 | GPIO_OTYPER_OT14); // Push-pull
-    GPIOF->OSPEEDR |= (GPIO_OSPEEDR_OSPEED12 | GPIO_OSPEEDR_OSPEED13 | GPIO_OSPEEDR_OSPEED14); // High speed
-    GPIOF->PUPDR &= ~(GPIO_PUPDR_PUPD12 | GPIO_PUPDR_PUPD13 | GPIO_PUPDR_PUPD14); // No pull
+    GPIOF->OTYPER &= ~(GPIO_OTYPER_OT12 | GPIO_OTYPER_OT13 | GPIO_OTYPER_OT14);
+    GPIOF->OSPEEDR |= (GPIO_OSPEEDR_OSPEED12 | GPIO_OSPEEDR_OSPEED13 |
+                       GPIO_OSPEEDR_OSPEED14); // High speed
+    GPIOF->PUPDR &= ~(GPIO_PUPDR_PUPD12 | GPIO_PUPDR_PUPD13 | GPIO_PUPDR_PUPD14); 
 
     // --- Configure Rows: PF0, PF1, PF2, PF3 as INPUT with Pull-Down ---
-    GPIOF->MODER &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1 | GPIO_MODER_MODE2 | GPIO_MODER_MODE3); // Input mode
-    GPIOF->PUPDR &= ~(GPIO_PUPDR_PUPD0 | GPIO_PUPDR_PUPD1 | GPIO_PUPDR_PUPD2 | GPIO_PUPDR_PUPD3);
-    GPIOF->PUPDR |=  (GPIO_PUPDR_PUPD0_1 | GPIO_PUPDR_PUPD1_1 | GPIO_PUPDR_PUPD2_1 | GPIO_PUPDR_PUPD3_1); // Pull-down
+    GPIOF->MODER &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1 | 
+                      GPIO_MODER_MODE2 | GPIO_MODER_MODE3); // Input mode
+    GPIOF->PUPDR &= ~(GPIO_PUPDR_PUPD0 | GPIO_PUPDR_PUPD1 | 
+                      GPIO_PUPDR_PUPD2 | GPIO_PUPDR_PUPD3);
+    GPIOF->PUPDR |=  (GPIO_PUPDR_PUPD0_1 | GPIO_PUPDR_PUPD1_1 | 
+                      GPIO_PUPDR_PUPD2_1 | GPIO_PUPDR_PUPD3_1); // Pull-down
 }
 
-
-
-// -----------------------------------------------------------------------------
+/* ---------------------------- Keypad_IsAnyKeyPressed()-----------------------
+ * Keypad_IsAnyKeyPressed() checks if any key on the keypad is pressed.
+ * It drives all columns high and checks if any row is high.
+ * If a key is pressed, it returns TRUE; otherwise, it returns FALSE.
+ * No debounce, just looking for a key twitch.
+ * -------------------------------------------------------------------------- */
 int Keypad_IsAnyKeyPressed(void) {
-// drive all COLUMNS HI; see if any ROWS are HI
-// return true if a key is pressed, false if not
-// currently no debounce here - just looking for a key twitch
-   COL_PORT->BSRR = COL_PINS;         	      // set all columns HI
+   COL_PORT->BSRR = COL_PINS;         	         // set all columns HI
    for ( uint16_t idx=0; idx<SETTLE; idx++ )   	// let it settle
       ;
    if ((ROW_PORT->IDR & ROW_PINS) != 0 )        // got a keypress!
@@ -65,13 +79,13 @@ int Keypad_IsAnyKeyPressed(void) {
       return( FALSE );                          // nope.
 }
  
-// -----------------------------------------------------------------------------
+/* ---------------------------- Keypad_WhichKeyIsPressed()---------------------
+ * Keypad_WhichKeyIsPressed() detects and encodes a pressed key at {row,col}
+ * It assumes a previous call to Keypad_IsAnyKeyPressed() returned TRUE.
+ * It verifies the Keypad_IsAnyKeyPressed() result (no debounce here),
+ * determines which key is pressed, and returns the encoded key ID.
+ * -------------------------------------------------------------------------- */
 int Keypad_WhichKeyIsPressed(void) {
-// detect and encode a pressed key at {row,col}
-// assumes a previous call to Keypad_IsAnyKeyPressed() returned TRUE
-// verifies the Keypad_IsAnyKeyPressed() result (no debounce here),
-// determines which key is pressed and returns the encoded key ID
- 
    int8_t iRow=0, iCol=0, iKey=0;  // keypad row & col index, key ID result
    int8_t bGotKey = 0;             // bool for keypress, 0 = no press
  
