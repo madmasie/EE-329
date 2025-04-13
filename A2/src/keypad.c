@@ -5,7 +5,7 @@
  * @file           : keypad.c
  * @brief          : keypad configuration and debounced detection of keypresses
  * project         : EE 329 S'23 Assignment A2
- * authors         : Maddie Masiello
+ * authors         : Maddie Masiello, Tatiana Ribay
  * version         : 0.1
  * date            : 
  * compiler        : STM32CubeIDE v.1.12.0 Build: 14980_20230301_1550 (UTC) 
@@ -13,14 +13,10 @@
  * clocks          : 4 MHz MSI to AHB2
  * @attention      : (c) 2023 STMicroelectronics.  All rights reserved.
  *******************************************************************************
- * Keypad
-
+ * Keypad Wiring 4 ROWS 3 COLS (pinout NUCLEO-L4A6ZG = L496ZG)
  *******************************************************************************
  * REVISION HISTORY
  * 0.1 
- *******************************************************************************
- * TODO
- * convert to separable module for portability
  *******************************************************************************
 */
 
