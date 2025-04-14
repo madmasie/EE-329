@@ -1,14 +1,14 @@
 /* USER CODE BEGIN Header */
 /*******************************************************************************
- * EE 329 A2 KEYPAD INTERFACE 
+ * EE 329 A2 KEYPAD INTERFACE
  *******************************************************************************
  * @file           : main.c
  * @brief          : keypad configuration and debounced detection of keypresses
  * project         : EE 329 S'23 Assignment 2
  * authors         : Maddie Masiello - mmasiell@calpoly.edu
  * version         : 0.1
- * date            : 
- * compiler        : STM32CubeIDE v.1.12.0 Build: 14980_20230301_1550 (UTC) 
+ * date            :
+ * compiler        : STM32CubeIDE v.1.12.0 Build: 14980_20230301_1550 (UTC)
  * target          : NUCLEO-L4A6ZG
  * clocks          : 4 MHz MSI to AHB2
  * @attention      : (c) 2023 STMicroelectronics.  All rights reserved.
@@ -44,55 +44,61 @@
  * 45678-1-2345678-2-2345678-3-2345678-4-2345678-5-2345678-6-2345678-7-234567 */
 /* USER CODE END Header */
 
-
 #include "main.h"
 #include "keypad.h"
 
-
 void SystemClock_Config(void);
-void DisplayKeyOnLEDs(uint8_t key);
+void Led_Config(void);
 
-int Keypad_DebouncedKey(void) {
-  int key1 = Keypad_WhichKeyIsPressed();
-  HAL_Delay(20);  // 20 ms debounce
-  int key2 = Keypad_WhichKeyIsPressed();
+int Keypad_DebouncedKey(void)
+{
+  volatile int key1 = Keypad_WhichKeyIsPressed();
+  HAL_Delay(20); // 20 ms debounce
+  volatile int key2 = Keypad_WhichKeyIsPressed();
   if (key1 == key2)
-      return key1;
+    return key1;
   else
-      return NO_KEYPRESS;
+    return NO_KEYPRESS;
 }
 
-
-int main(void) {
+int main(void)
+{
   HAL_Init();
   SystemClock_Config();
 
-  Keypad_Config();      // Setup keypad GPIO
-  DisplayKeyOnLEDs(0);  // Initialize LEDs to 0
+  Keypad_Config(); // Setup keypad GPIO
+  COL_PORT->BSRR = COL_PINS;
 
-  int last_key = NO_KEYPRESS;
+  Led_Config(); // Configure LED GPIO
 
-  while (1) {
-    if (Keypad_IsAnyKeyPressed()) {
-        int key = Keypad_DebouncedKey();
-        if (key != NO_KEYPRESS && key != last_key) {
-            DisplayKeyOnLEDs(key);
-            last_key = key;
-        }
+  volatile int last_key = NO_KEYPRESS;
+  while (1)
+  {
+    if (Keypad_IsAnyKeyPressed())
+    {
+      volatile int key = Keypad_DebouncedKey();
+      if (key != NO_KEYPRESS && key != last_key)
+      {
+        GPIOC->ODR = key;
+        last_key = key;
+      }
     }
+    else
+    {
+      last_key = NO_KEYPRESS; // Reset last key if no key is pressed
+    }
+  }
 }
 
-}
-
-
-// --- LED Display Function ---
-void DisplayKeyOnLEDs(uint8_t key) {
+// --- LED Display Configuration ---
+void Led_Config(void)
+{
   RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
 
   GPIOC->MODER &= ~(GPIO_MODER_MODE0 | GPIO_MODER_MODE1 |
                     GPIO_MODER_MODE2 | GPIO_MODER_MODE3);
-  GPIOC->MODER |=  (GPIO_MODER_MODE0_0 | GPIO_MODER_MODE1_0 |
-                    GPIO_MODER_MODE2_0 | GPIO_MODER_MODE3_0);
+  GPIOC->MODER |= (GPIO_MODER_MODE0_0 | GPIO_MODER_MODE1_0 |
+                   GPIO_MODER_MODE2_0 | GPIO_MODER_MODE3_0);
 
   GPIOC->OTYPER &= ~(GPIO_OTYPER_OT0 | GPIO_OTYPER_OT1 |
                      GPIO_OTYPER_OT2 | GPIO_OTYPER_OT3);
@@ -101,8 +107,7 @@ void DisplayKeyOnLEDs(uint8_t key) {
   GPIOC->OSPEEDR |= (GPIO_OSPEEDER_OSPEEDR0 | GPIO_OSPEEDER_OSPEEDR1 |
                      GPIO_OSPEEDER_OSPEEDR2 | GPIO_OSPEEDER_OSPEEDR3);
 
-  GPIOC->ODR &= ~(0x0F);           // Clear LEDs
-  GPIOC->ODR |= (key & 0x0F);      // Show lower 4 bits
+  GPIOC->BRR = (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 }
 
 void SystemClock_Config(void)
@@ -110,16 +115,14 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage
-  */
+  /** Configure the main internal regulator output voltage */
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
     Error_Handler();
   }
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+   * in the RCC_OscInitTypeDef structure. */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.MSIState = RCC_MSI_ON;
   RCC_OscInitStruct.MSICalibrationValue = 0;
@@ -130,10 +133,8 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  /** Initializes the CPU, AHB and APB buses clocks */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -150,9 +151,9 @@ void SystemClock_Config(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -163,10 +164,8 @@ void Error_Handler(void)
   }
 }
 
-#ifdef  USE_FULL_ASSERT
-
+#ifdef USE_FULL_ASSERT
 void assert_failed(uint8_t *file, uint32_t line)
 {
-
 }
-#endif 
+#endif
