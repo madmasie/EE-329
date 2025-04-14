@@ -107,6 +107,26 @@ int main(void)
       }
 }
 
+//Attempted/failed infinite loop to check for key presses and
+// display on LEDs
+//NOTE: project wwould only work in "debug mode"
+// volatile int last_key = NO_KEYPRESS;
+// while (1)
+// {
+//   if (Keypad_IsAnyKeyPressed())
+//   {
+//     volatile int key = Keypad_DebouncedKey();
+//     if (key != NO_KEYPRESS && key != last_key)
+//     {
+//       GPIOC->ODR = key;
+//       last_key = key;
+//     }
+//   }
+//   else
+//   {
+//     GPIOC->ODR = 0x0; // Turn off LEDs if no key is pressed
+//   }
+
   /* ---------------------------- Led_Config()----------------------------------
   * Led_Config() configures the GPIO pins for the LEDs.
   * It enables the GPIOC clock, sets the mode to output, and configures
