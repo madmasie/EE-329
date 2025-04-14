@@ -86,6 +86,15 @@ int main(void)
   Led_Config(); // Configure LED GPIO
 
 
+  /* ---------------------------- infinite while loop-----------------------
+  * Infinite loop to check for key presses and display on LEDs
+  * The loop continuously checks if any key is pressed using the 
+  * Keypad_IsAnyKeyPressed() function. If a key is pressed,
+  * it determines which key is pressed using the
+  * Keypad_WhichKeyIsPressed() function. The pressed key is then displayed
+  * on the LED display by setting the corresponding bits in GPIOC->ODR.
+  * If no key is pressed, the LED display is turned off.
+  * -------------------------------------------------------------------------- */
   volatile int last_key = NO_KEYPRESS;
   while (1) { 
     if (Keypad_IsAnyKeyPressed())
