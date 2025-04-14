@@ -56,6 +56,7 @@ void Led_Config(void);
   * It assumes a previous call to Keypad_IsAnyKeyPressed() returned TRUE.
   * It verifies the Keypad_IsAnyKeyPressed() result (no debounce here),
   * determines which key is pressed, and returns the encoded key ID.
+  * 20ms debounce delay is added
   * -------------------------------------------------------------------------- */
 int Keypad_DebouncedKey(void)
 {
@@ -86,7 +87,7 @@ int main(void)
   Led_Config(); // Configure LED GPIO
 
 
-  /* ---------------------------- infinite while loop--------------------------
+ /* ---------------------------- infinite while loop--------------------------
   * Infinite loop to check for key presses and display on LEDs
   * The loop continuously checks if any key is pressed using the 
   * Keypad_IsAnyKeyPressed() function. If a key is pressed,
