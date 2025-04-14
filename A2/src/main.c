@@ -25,13 +25,13 @@
  *******************************************************************************
  * KEYPAD WIRING 4 ROWS 3 COLS (pinout NUCLEO-L4A6ZG = L496ZG)
  *      peripheral – Nucleo I/O
- * keypad 1  COL 2 - PF13= CN10- 2 - OUT
- * keypad 2  ROW 1 - PF0 = CN9 -21 - IN, PD ON
- * keypad 3  COL 1 - PF12= CN7 -20 - OUT
- * keypad 4  ROW 4 - PF3 = CN8 -14 - IN, PD ON
- * keypad 5  COL 3 - PF14= CN10- 8 - OUT
- * keypad 6  ROW 3 - PF2 = CN9 -17 - IN, PD ON
- * keypad 7  ROW 2 - PF1 = CN9 -19 - IN, PD ON
+ * keypad 1  COL 2 - PE2 (COL1)
+ * keypad 2  COL 4 - PE4 (COL2) 
+ * keypad 3  COL 5 - PE5 (COL3)
+ * keypad 4  ROW 6 - PD6 (ROW1)
+ * keypad 5  ROW 5 - PD5 (ROW2)
+ * keypad 6  ROW 4 - PD4 (ROW3)
+ * keypad 7  ROW 3 - PD3 (ROW4)
  *******************************************************************************
  * REVISION HISTORY
  * 0.1 230318 bfd  created, wires in breadboard, no keypad
