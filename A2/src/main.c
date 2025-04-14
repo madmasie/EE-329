@@ -86,7 +86,7 @@ int main(void)
   Led_Config(); // Configure LED GPIO
 
 
-  /* ---------------------------- infinite while loop-----------------------
+  /* ---------------------------- infinite while loop--------------------------
   * Infinite loop to check for key presses and display on LEDs
   * The loop continuously checks if any key is pressed using the 
   * Keypad_IsAnyKeyPressed() function. If a key is pressed,
@@ -107,7 +107,12 @@ int main(void)
       }
 }
 
-// --- LED Display Configuration ---
+  /* ---------------------------- Led_Config()----------------------------------
+  * Led_Config() configures the GPIO pins for the LEDs.
+  * It enables the GPIOC clock, sets the mode to output, and configures
+  * the output type, pull-up/pull-down resistors, and speed.
+  * The function also clears the LED pins to turn them off initially.
+  * -------------------------------------------------------------------------- */
 void Led_Config(void)
 {
   RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
@@ -127,6 +132,13 @@ void Led_Config(void)
   GPIOC->BRR = (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 }
 
+  /* ---------------------------- SystemClock_Config---------------------------
+  * SystemClock_Config() configures the system clock to use the MSI
+  * oscillator as the clock source. It sets the MSI clock range, PLL state,
+  * and other clock parameters. The function also enables the
+  * voltage scaling for the main internal regulator output voltage.
+  * We are using the MSI clock at 4 MHz for the system clock.
+  * -------------------------------------------------------------------------- */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
