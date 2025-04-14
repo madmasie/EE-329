@@ -60,16 +60,13 @@ void Keypad_Config(void)
  * -------------------------------------------------------------------------- */
 int Keypad_IsAnyKeyPressed(void)
 {
-   // drive all COLUMNS HI; see if any ROWS are HI
-   // return true if a key is pressed, false if not
-   // currently no debounce here - just looking for a key twitch
-   COL_PORT->BSRR = COL_PINS;                  // set all columns HI
-   for (uint16_t idx = 0; idx < SETTLE; idx++) // let it settle
+   COL_PORT->BSRR = COL_PINS;                      // set all columns HI
+   for (uint16_t idx = 0; idx < SETTLE; idx++)     // let it settle
       ;
-   if ((ROW_PORT->IDR & ROW_PINS) != 0) // got a keypress!
+   if ((ROW_PORT->IDR & ROW_PINS) != 0)            // got a keypress!
       return (TRUE);
    else
-      return (FALSE); // nope.
+      return (FALSE);                              // nope.
 }
 
 /* ---------------------------- Keypad_WhichKeyIsPressed()---------------------

@@ -50,6 +50,13 @@
 void SystemClock_Config(void);
 void Led_Config(void);
 
+
+/* ---------------------------- Keypad_WhichKeyIsPressed()---------------------
+ * This function detects and encodes a pressed key at {row,col}
+  * It assumes a previous call to Keypad_IsAnyKeyPressed() returned TRUE.
+  * It verifies the Keypad_IsAnyKeyPressed() result (no debounce here),
+  * determines which key is pressed, and returns the encoded key ID.
+  * -------------------------------------------------------------------------- */
 int Keypad_DebouncedKey(void)
 {
   volatile int key1 = Keypad_WhichKeyIsPressed();
@@ -60,6 +67,13 @@ int Keypad_DebouncedKey(void)
   else
     return NO_KEYPRESS;
 }
+/* ---------------------------- main()-----------------------------------------
+ * main() initializes the system, configures the GPIO for the keypad,
+ * and enters an infinite loop to check for key presses. 
+ * It uses the Keypad_WhichKeyIsPressed() function to determine which key is 
+ * pressed. The pressed key is displayed on the LED display, confugured 
+ * to show a binary value.
+ * -------------------------------------------------------------------------- */
 
 int main(void)
 {
@@ -71,23 +85,17 @@ int main(void)
 
   Led_Config(); // Configure LED GPIO
 
+
   volatile int last_key = NO_KEYPRESS;
-  while (1)
-  {
+  while (1) { 
     if (Keypad_IsAnyKeyPressed())
-    {
-      volatile int key = Keypad_DebouncedKey();
-      if (key != NO_KEYPRESS && key != last_key)
-      {
-        GPIOC->ODR = key;
-        last_key = key;
+    { 
+      if (Keypad_WhichKeyIsPressed() > 0 && Keypad_WhichKeyIsPressed() < 16){ 
+        GPIOC->ODR = Keypad_WhichKeyIsPressed(); 
+      } 
+      else 
+        GPIOC->ODR = (0x0); 
       }
-    }
-    else
-    {
-      last_key = NO_KEYPRESS; // Reset last key if no key is pressed
-    }
-  }
 }
 
 // --- LED Display Configuration ---
