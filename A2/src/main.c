@@ -25,13 +25,13 @@
  *******************************************************************************
  * KEYPAD WIRING 4 ROWS 3 COLS (pinout NUCLEO-L4A6ZG = L496ZG)
  *      peripheral – Nucleo I/O
- * keypad 1  COL 2 - PE2 (COL1)
- * keypad 2  COL 4 - PE4 (COL2)
- * keypad 3  COL 5 - PE5 (COL3)
- * keypad 4  ROW 6 - PD6 (ROW1)
- * keypad 5  ROW 5 - PD5 (ROW2)
- * keypad 6  ROW 4 - PD4 (ROW3)
- * keypad 7  ROW 3 - PD3 (ROW4)
+ * keypad 1  COL 2 - PF13= CN10- 2 - OUT
+ * keypad 2  ROW 1 - PF0 = CN9 -21 - IN, PD ON
+ * keypad 3  COL 1 - PF12= CN7 -20 - OUT
+ * keypad 4  ROW 4 - PF3 = CN8 -14 - IN, PD ON
+ * keypad 5  COL 3 - PF14= CN10- 8 - OUT
+ * keypad 6  ROW 3 - PF2 = CN9 -17 - IN, PD ON
+ * keypad 7  ROW 2 - PF1 = CN9 -19 - IN, PD ON
  *******************************************************************************
  * REVISION HISTORY
  * 0.1 230318 bfd  created, wires in breadboard, no keypad
@@ -50,13 +50,6 @@
 void SystemClock_Config(void);
 void Led_Config(void);
 
-/* ---------------------------- Keypad_WhichKeyIsPressed()---------------------
- * This function detects and encodes a pressed key at {row,col}
- * It assumes a previous call to Keypad_IsAnyKeyPressed() returned TRUE.
- * It verifies the Keypad_IsAnyKeyPressed() result (no debounce here),
- * determines which key is pressed, and returns the encoded key ID.
- * 20ms debounce delay is added
- * -------------------------------------------------------------------------- */
 int Keypad_DebouncedKey(void)
 {
   volatile int key1 = Keypad_WhichKeyIsPressed();
@@ -67,13 +60,6 @@ int Keypad_DebouncedKey(void)
   else
     return NO_KEYPRESS;
 }
-/* ---------------------------- main()-----------------------------------------
- * main() initializes the system, configures the GPIO for the keypad,
- * and enters an infinite loop to check for key presses.
- * It uses the Keypad_WhichKeyIsPressed() function to determine which key is
- * pressed. The pressed key is displayed on the LED display, confugured
- * to show a binary value.
- * -------------------------------------------------------------------------- */
 
 int main(void)
 {
@@ -85,18 +71,8 @@ int main(void)
 
   Led_Config(); // Configure LED GPIO
 
-  /* ---------------------------- infinite while loop--------------------------
-   * Infinite loop to check for key presses and display on LEDs
-   * The loop continuously checks if any key is pressed using the
-   * Keypad_IsAnyKeyPressed() function. If a key is pressed,
-   * it determines which key is pressed using the
-   * Keypad_WhichKeyIsPressed() function. The pressed key is then displayed
-   * on the LED display by setting the corresponding bits in GPIOC->ODR.
-   * If no key is pressed, the LED display is turned off.
-   * -------------------------------------------------------------------------- */
-
-   while (1)
-   {
+  while (1)
+  {
 	  if (Keypad_IsAnyKeyPressed())
 	  {
 
@@ -110,36 +86,9 @@ int main(void)
 
 	  }
   }
-
-
 }
 
-// Attempted/failed infinite loop to check for key presses and
-//  display on LEDs
-// NOTE: project wwould only work in "debug mode"
-//  volatile int last_key = NO_KEYPRESS;
-//  while (1)
-//  {
-//    if (Keypad_IsAnyKeyPressed())
-//    {
-//      volatile int key = Keypad_DebouncedKey();
-//      if (key != NO_KEYPRESS && key != last_key)
-//      {
-//        GPIOC->ODR = key;
-//        last_key = key;
-//      }
-//    }
-//    else
-//    {
-//      GPIOC->ODR = 0x0; // Turn off LEDs if no key is pressed
-//    }
-
-/* ---------------------------- Led_Config()----------------------------------
- * Led_Config() configures the GPIO pins for the LEDs.
- * It enables the GPIOC clock, sets the mode to output, and configures
- * the output type, pull-up/pull-down resistors, and speed.
- * The function also clears the LED pins to turn them off initially.
- * -------------------------------------------------------------------------- */
+// --- LED Display Configuration ---
 void Led_Config(void)
 {
   RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
@@ -159,13 +108,6 @@ void Led_Config(void)
   GPIOC->BRR = (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
 }
 
-/* ---------------------------- SystemClock_Config---------------------------
- * SystemClock_Config() configures the system clock to use the MSI
- * oscillator as the clock source. It sets the MSI clock range, PLL state,
- * and other clock parameters. The function also enables the
- * voltage scaling for the main internal regulator output voltage.
- * We are using the MSI clock at 4 MHz for the system clock.
- * -------------------------------------------------------------------------- */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
