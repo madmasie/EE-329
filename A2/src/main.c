@@ -95,27 +95,23 @@ int main(void)
    * If no key is pressed, the LED display is turned off.
    * -------------------------------------------------------------------------- */
 
-  // Keep track of the last key so we don't call the action multiple times
-  int last_key = NO_KEYPRESS;
+   while (1)
+   {
+	  if (Keypad_IsAnyKeyPressed())
+	  {
 
-  while (1)
-  {
-    if (Keypad_IsAnyKeyPressed())
-    {
-      int pressed = Keypad_WhichKeyIsPressed();
+		  if (Keypad_WhichKeyIsPressed() > 0 && Keypad_WhichKeyIsPressed() < 16){
+			  //currentKeyValue = Keypad_WhichKeyIsPressed();
+			  //GPIOC->ODR = (currentKeyValue);
+			  GPIOC->ODR = Keypad_WhichKeyIsPressed();
+		  }
+		  else
+			  GPIOC->ODR = (0x0);
 
-      // Check if the pressed key is different from the last key
-      if (pressed != last_key && pressed > 0 && pressed < 16)
-      {
-        last_key = pressed;
-        GPIOC->ODR = pressed;
-      }
-      else
-      {
-        GPIOC->ODR = (0x0);
-      }
-    }
+	  }
   }
+
+
 }
 
 // Attempted/failed infinite loop to check for key presses and
